@@ -1,2 +1,3 @@
 /sub-*/ses-*/eeg/sub-*_ses-*_task-ctos_run-5*_*.*
 /sub-*/ses-*/sub-*_ses-*_scans.tsv
+.nemar/
