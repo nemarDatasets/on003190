@@ -1,0 +1,11 @@
+{
+  "sample": {
+    "Description": "Onset of the event expressed in samples relative to the start of the recording (sampling frequency 256 Hz)."
+  },
+  "type": {
+    "Description": "Class of the event as written by the acquisition software. All events in this dataset are of type 'trigger' (stimulus or phase marker)."
+  },
+  "value": {
+    "Description": "Numeric trigger code written by the stimulus-presentation software. See the dataset README for the full code book: codes 1-9 indicate which one of the symbols on screen was activated; code 101 marks the beginning of a block; codes 200-203 mark the boundaries between the Fixation, Target Presentation, Preparation, Stimulation and Rest phases (the Stimulation phase has a distinct start and end marker)."
+  }
+}
