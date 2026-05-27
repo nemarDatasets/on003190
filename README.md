@@ -17,33 +17,34 @@ The marker encodes this information as follows:
 •(iv)the phases of one block of the experiment are: Fixation, Target Presentation, Preparation, Stimulation and Rest
 •(iv)in particular the Stimulation phase has a start marker and an end marker
 
-## NEMAR curation changes (2026-05-21)
+## NEMAR curation changes (2026-05-21, revised 2026-05-27)
 
-BIDS validator: 560 errors + 15403 warnings → 0 errors + 11201 warnings. Raw `.eeg` / `.vhdr` / `.vmrk` binary payloads unchanged.
+The BIDS validator went from 560 errors + 15403 warnings to 0 errors + 11202 warnings. None of the raw recording files (.eeg, .vhdr, .vmrk) were touched — every change is to a text sidecar.
 
-### `dataset_description.json`
-- Added `DatasetType: "raw"` and a `GeneratedBy` entry naming `nemar-cli`. Why: BIDS-validator otherwise infers a derivative-dataset rules cascade when `DatasetType` is missing alongside `GeneratedBy`, producing spurious warnings.
-- Bumped `BIDSVersion` from `1.2` to `1.8.0`. Why: BIDS-validator fires `UNKNOWN_BIDS_VERSION` for any pre-1.8 version string; 1.8.0 is the current stable schema that all the changes below target.
+**Dataset description (`dataset_description.json`)**
+- Added `DatasetType: "raw"` so the dataset is validated as raw data rather than a derivative.
+- Updated `BIDSVersion` from `1.2` to `1.11.1` (the version the current validator checks against).
+- `GeneratedBy` was left absent, exactly as the source published it — nothing was added there.
 
-### `task-cnos_channels.json` (new, inheriting root sidecar)
-- Created a root-level `task-cnos_channels.json` declaring a `Description` for the `software_filters` column. Why: the per-recording `channels.tsv` files carry a non-standard `software_filters` column that is not part of the BIDS channels-table spec, which fires `TSV_ADDITIONAL_COLUMNS_MUST_DEFINE:software_filters` once per file. One root sidecar inherits to all 280 cnos recordings and closes the 280 errors. Only the genuinely non-standard column is declared; the other columns (`name`, `type`, `units`, `sampling_frequency`, `low_cutoff`, `high_cutoff`, `notch`, `status`, `status_description`) are BIDS-canonical and inherit the built-in schema without redeclaration.
+**Channel tables (`channels.tsv`, all 280 task-cnos recordings)**
+- The 8 scalp electrodes (Fz, Cz, P3, Pz, P4, PO7, PO8, Oz) had their channel type written as `unknown`, which is not a valid BIDS channel type; they were set to `EEG`. The trailing timestamp channel, also `unknown`, was set to `MISC` (it is a sample-index column, not a measured signal).
+- The same 8 EEG rows had their units written as `unknown`; these were set to `uV`, the conventional unit for scalp EEG. The timestamp row's units were set to `n/a`, since a sample index has no physical unit.
 
-### `sub-*/ses-*/eeg/sub-*_task-cnos_run-*_channels.tsv` (280 files)
-- Rewrote the `type` column for each of the 9 rows: the first 8 channels (`FZ`, `Cz`, `P3`, `PZ`, `P4`, `PO7`, `PO8`, `Oz`) had `type=unknown` and are now `type=EEG`; the trailing `Timestamp` channel had `type=unknown` and is now `type=MISC`. Why: BIDS validator fires `TSV_VALUE_INCORRECT_TYPE:type` for `unknown` (not in the BIDS channel-type enum). The 8/1 EEG/MISC split is documented in this README (see the channel list above) and is the same partition across all 280 files (verified by md5 hash; 280 cnos channels.tsv files share a single content hash).
-- Rewrote the `units` column for the 8 EEG rows from `unknown` to `uV`. Why: scalp EEG is conventionally µV; the BIDS-validator accepts `uV` for the EEG units. The `Timestamp` row's `units` was set to `n/a` (sample-index column, no SI unit).
+**Channel-column documentation (`task-cnos_channels.json`, new, at the dataset root)**
+- The per-recording channel tables carry a non-standard `software_filters` column that BIDS does not define. A single root-level sidecar adds a description for that column, which then applies to all 280 recordings. The other columns are standard BIDS channel-table columns and need no description.
 
-### `sub-*/ses-*/eeg/sub-*_task-cnos_run-*_eeg.json` (280 files)
-- Renamed the PascalCase typo `MiscChannelCount` to the BIDS-canonical `MISCChannelCount`, and fixed the value from `9` to `1`. Why: per the README, the recording has 8 EEG channels + 1 timestamp channel; the original `MiscChannelCount: 9` lumped every channel into the misc bucket, which also caused the validator's `MISC_CHANNEL_COUNT_MISMATCH` to fire once per recording (1 MISC-typed row in channels.tsv vs the declared count of 9). The canonical spelling `MISCChannelCount` plus the correct count of `1` closes both the typo warning and the mismatch.
-- Set `EEGChannelCount` from `0` to `8`. Why: per the README, 8 scalp electrodes are recorded (Fz, Cz, P3, Pz, P4, PO7, PO8, Oz). The original `0` was inconsistent with both the channels.tsv body and the README; the corrected value now matches the EEG row count after the type fix.
+**Recording sidecars (`_eeg.json`, all 280 task-cnos recordings)**
+- The misc-channel-count field was spelled `MiscChannelCount`; BIDS uses the all-uppercase `MISCChannelCount`. It was renamed, and its value corrected from `9` to `1` — there is a single timestamp (misc) channel, not nine.
+- `EEGChannelCount` was `0`, which contradicted both the channel table and the dataset description; it was set to `8` to match the 8 scalp electrodes that are actually recorded.
 
-### `task-cnos_eeg.json` (new, inheriting root sidecar)
-- Created a root-level `task-cnos_eeg.json` declaring `EEGPlacementScheme: "10-20"` (README states explicitly: "according to the 10-20 EEG electrode placement standard") and `EEGGround: "AFz"` (README states explicitly: "grounded to AFz channel"). Why: these two fields are recommended by BIDS and fire `SIDECAR_KEY_RECOMMENDED` once per recording when missing. One inheriting root sidecar broadcasts both values to all 280 cnos recordings and closes 1680 warnings.
+**Electrode layout (`task-cnos_eeg.json`, new, at the dataset root)**
+- Added `EEGPlacementScheme: "10-20"` and `EEGGround: "AFz"`. Both values come straight from this dataset's own description above, not from any guess: the description states the recordings were collected "according to the 10-20 EEG electrode placement standard" and were "grounded to AFz channel." A single root sidecar applies both to all 280 recordings.
 
-### `task-cnos_events.json` (new, inheriting root sidecar)
-- Created a root-level `task-cnos_events.json` declaring `Description` entries for the non-required events.tsv columns `sample`, `type`, and `value`. Why: the per-recording `events.tsv` files use these three columns in addition to the required `onset`/`duration`, but no sidecar declares them, which fires `TSV_ADDITIONAL_COLUMNS_UNDEFINED:{sample,type,value}` once per file. The `value` Description references this README's marker key (codes 1-9, 101, 200-203) rather than enumerating `Levels` because the on-disk values include codes 102-109 that this README does not document, and locking the column to an incomplete `Levels` enum would reject those cells.
+**Event-column documentation (`task-cnos_events.json`, new, at the dataset root)**
+- The event tables use `sample`, `type`, and `value` columns that were previously undocumented; a root sidecar describes all three. For `value`, the numeric trigger codes are explained in the dataset description above: codes 1–9 indicate which on-screen symbol was activated, 101 marks the start of a block, and 200–203 mark the boundaries of the experiment's five phases (Fixation, Target Presentation, Preparation, Stimulation, Rest). A few additional codes (102–109) also appear in the data but are not explained in the source, so they were left as plain numeric codes rather than given invented meanings.
 
-### Remaining warnings (Tier C — left intact)
-- 11201 `SIDECAR_KEY_RECOMMENDED` warnings remain across `Manufacturer`, `ManufacturersModelName`, `SoftwareVersions`, `DeviceSerialNumber`, `Instructions`, `CogAtlasID`, `CogPOID`, `CapManufacturer`, `CapManufacturersModelName`, `RecordingType`, `HeadCircumference`, `HardwareFilters`, `SubjectArtefactDescription`, `StimulusPresentation`, plus 1 `JSON_KEY_RECOMMENDED:HEDVersion`. None of these fields are documented anywhere in the dataset (README, existing sidecars, file headers), so filling them would mean inventing metadata. Per the curation rule of 100% defensibility, they are left as recommended-only warnings rather than guessed.
+**Remaining warnings (11202) — left on purpose**
+- These are all "recommended but missing" equipment and study fields (for example: manufacturer, cap model, hardware filters, device serial number, instructions, head circumference, cognitive-atlas IDs). None of them are documented anywhere in the dataset, so they were left blank rather than filled with guesses.
 
-### Out of mechanical scope
-- The 104 channels.tsv files under `task-ctos_*` (run literals `5F` and `5H`) were not touched. The BIDS validator silently excludes them from validation because the `run-` entity must be an integer; non-integer suffixes cause those filenames to fall outside the BIDS file-naming rule and thus generate no errors or warnings. Renaming runs (e.g. to `run-5_acq-F`/`run-5_acq-H`) would require structural rework outside mechanical sidecar curation, since the run numbering is documented as "Standard-Flash" vs "Cartoon-Face" in this README and any renaming has to preserve that semantic association.
+**Left untouched — outside this metadata cleanup**
+- The 104 channel tables under `task-ctos` with run labels `5F` and `5H` were left as published. BIDS requires run labels to be integers, so the validator quietly skips these files (they raise no errors or warnings). Renaming the runs would mean restructuring the files while preserving the Standard-Flash versus Cartoon-Face meaning that those labels encode (described above), which is beyond a sidecar cleanup.
