@@ -1,0 +1,5 @@
+{
+  "software_filters": {
+    "Description": "List of software filters applied during recording. `n/a` if no software filter was applied."
+  }
+}
