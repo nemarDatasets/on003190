@@ -2,8 +2,8 @@
   "version": "2.0",
   "pipeline_stage": "validated",
   "title": "Assesment of the visual stimuli properties in P300 paradigm",
-  "description": "EEG dataset from 19 participants performing a visual P300 speller-like paradigm to assess how visual stimulus properties affect evoked responses and classification accuracy. Each participant completed three sessions with conditions varying the number of stimuli (4 to 9) and the flash type (standard flash versus a superimposed yellow smiling cartoon face). Recordings comprise 382 files from eight electrodes sampled at 256 Hz, with markers encoding trial phases and activated symbols.",
-  "methods_description": "EEG was recorded from Fz, Cz, P3, Pz, P4, PO7, PO8 and Oz (10-20 system), grounded at AFz and referenced to right mastoid (M2), at 256 Hz. Each experimental block had five phases: Fixation, Target Presentation, Preparation, Stimulation and Rest, with markers denoting phase boundaries and the activated stimulus. Each participant completed 3 sessions of 7 recordings with different numbers of stimuli and flash types.",
+  "description": "EEG recordings from 19 participants performing a P300 speller-style visual stimulation paradigm, designed to assess how stimulus properties affect brain responses and classification accuracy. Each participant completed three sessions with varying numbers of stimuli (4 to 9) and two flash types, a standard flash and a flash superimposed with a cartoon face. Eight scalp channels (Fz, Cz, P3, Pz, P4, PO7, PO8, Oz) were sampled at 256 Hz, together with timestamps and event markers encoding the experimental phases.",
+  "methods_description": "Eight EEG channels placed per the 10-20 system (Fz, Cz, P3, Pz, P4, PO7, PO8, Oz), grounded at AFz and referenced to the right mastoid (M2), sampled at 256 Hz. Each block comprised Fixation, Target Presentation, Preparation, Stimulation and Rest phases, with markers encoding phase boundaries and the activated symbol. Each of three sessions contained seven recordings varying in stimulus count (4-9) and flash type (standard flash vs cartoon face).",
   "license": "CC0",
   "dataset_type": "raw",
   "authors": {
@@ -21,7 +21,7 @@
       "term": "brain-computer interface"
     },
     {
-      "term": "visual stimuli"
+      "term": "visual stimulation"
     },
     {
       "term": "event-related potentials"
@@ -66,5 +66,6 @@
     ".vmrk",
     ".yml"
   ],
-  "source_hash": "940803ca5b414007de6e5ec5701da4b3ed9c26ce8428a006a92887a40594ebfe"
+  "resource_type_general": "Dataset",
+  "source_hash": "0b59504ee76d6a196e9d8cf5b43971c80141bd34bb76c608424d8a3cf81f549f"
 }
